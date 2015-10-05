@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Sat Sep 26 20:43:17 2015 (time0=1443292997)
+00000000000i[CMOS  ] Setting initial clock to: Tue Oct  6 01:03:04 2015 (time0=1444086184)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -166,7 +166,7 @@
 00001398971i[BIOS  ] Firmware waking vector 0xff00cc
 00001400766i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
 00001401489i[BIOS  ] bios_table_cur_addr: 0x000fa6c4
-00002368716i[XGUI  ] charmap update. Font Height is 16
+00001559440i[XGUI  ] charmap update. Font Height is 16
 00029625339i[BIOS  ] Booting from 0000:7c00
 00045340847i[FLOPPY] partial read() on floppy image returns 104/512
 00045385291i[FLOPPY] read() on floppy image returns 0
@@ -199,25 +199,25 @@
 00046587634i[FLOPPY] read() on floppy image returns 0
 00046632078i[FLOPPY] read() on floppy image returns 0
 00046676522i[FLOPPY] read() on floppy image returns 0
-00693574458i[      ] Ctrl-C detected in signal handler.
-00693574459i[      ] dbg: Quit
-00693574459i[CPU0  ] CPU is in protected mode (active)
-00693574459i[CPU0  ] CS.mode = 32 bit
-00693574459i[CPU0  ] SS.mode = 32 bit
-00693574459i[CPU0  ] EFER   = 0x00000000
-00693574459i[CPU0  ] | EAX=00000039  EBX=00016ba1  ECX=00000232  EDX=000005a0
-00693574459i[CPU0  ] | ESP=00016b60  EBP=00016b88  ESI=00016ba4  EDI=00000004
-00693574459i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf SF zf AF pf CF
-00693574459i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-00693574459i[CPU0  ] |  CS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
-00693574459i[CPU0  ] |  DS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-00693574459i[CPU0  ] |  SS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-00693574459i[CPU0  ] |  ES:0018( 0003| 0|  0) 00000000 ffffffff 1 1
-00693574459i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
-00693574459i[CPU0  ] |  GS:0000( 0000| 0|  0) 00000000 00000000 0 0
-00693574459i[CPU0  ] | EIP=00010c9b (00010c9b)
-00693574459i[CPU0  ] | CR0=0x80000011 CR2=0x00000000
-00693574459i[CPU0  ] | CR3=0x0002a000 CR4=0x00000000
-00693574459i[CMOS  ] Last time is 1443293170 (Sat Sep 26 20:46:10 2015)
-00693574459i[XGUI  ] Exit
-00693574459i[SIM   ] quit_sim called with exit code 0
+00180668000i[      ] Ctrl-C detected in signal handler.
+00180668000i[      ] dbg: Quit
+00180668000i[CPU0  ] CPU is in protected mode (active)
+00180668000i[CPU0  ] CS.mode = 32 bit
+00180668000i[CPU0  ] SS.mode = 32 bit
+00180668000i[CPU0  ] EFER   = 0x00000000
+00180668000i[CPU0  ] | EAX=0011bfd7  EBX=0011bfd8  ECX=00016ba1  EDX=00000036
+00180668000i[CPU0  ] | ESP=00016b7c  EBP=00016b88  ESI=00000003  EDI=00003ff4
+00180668000i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df if tf sf zf af PF cf
+00180668000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+00180668000i[CPU0  ] |  CS:0010( 0002| 0|  0) 00000000 ffffffff 1 1
+00180668000i[CPU0  ] |  DS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00180668000i[CPU0  ] |  SS:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00180668000i[CPU0  ] |  ES:0018( 0003| 0|  0) 00000000 ffffffff 1 1
+00180668000i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
+00180668000i[CPU0  ] |  GS:0000( 0000| 0|  0) 00000000 00000000 0 0
+00180668000i[CPU0  ] | EIP=00010df3 (00010df3)
+00180668000i[CPU0  ] | CR0=0x80000011 CR2=0x00000000
+00180668000i[CPU0  ] | CR3=0x0002a000 CR4=0x00000000
+00180668000i[CMOS  ] Last time is 1444086229 (Tue Oct  6 01:03:49 2015)
+00180668000i[XGUI  ] Exit
+00180668000i[SIM   ] quit_sim called with exit code 0

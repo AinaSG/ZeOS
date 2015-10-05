@@ -24,10 +24,6 @@ struct task_struct *list_head_to_task_struct(struct list_head *l)
 
 extern struct list_head blocked;
 
-//ENTREGA 2
-struct list_head freequeue;
-struct list_head readyqueue;
-
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -62,21 +58,6 @@ void cpu_idle(void)
 	;
 	}
 }
-//ENTREGA 2, inicialitzem la feequeue posant moltes tasques buides
-void init_freequeue (void){
-    //Inicalitzem una llista buida, usem INIT_LIST_HEAD de list.h per assegurarho
-    INIT_LIST_HEAD(&freequeue);
-
-    int i;
-    for ( i= 0; i < NR_TASKS; ++i){
-        list_add_tail(&task[i].task.list, &freequeue);
-    }
-}
-
-void init_readyqueue (void){
-    INIT_LIST_HEAD(&readyqueue);
-}
-
 
 void init_idle (void)
 {
