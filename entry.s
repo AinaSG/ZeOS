@@ -41,3 +41,7 @@ fin:
     movl %eax, 0x18(%esp)
     popl %ebx; popl %ecx; popl %edx; popl %esi; popl %edi; popl %ebp; popl %eax; popl %ds; popl %es; popl %fs; popl %gs
     iret
+
+.globl ret_from_fork; .type ret_from_fork, @function; .align 0; ret_from_fork:
+    popl %ebx; popl %ecx; popl %edx; popl %esi; popl %edi; popl %ebp; popl %eax; popl %ds; popl %es; popl %fs; popl %gs
+    iret

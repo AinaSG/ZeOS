@@ -72,6 +72,7 @@ int __attribute__((__section__(".text.main")))
 
   printk("Kernel Loaded!    "); 
  zeos_ticks = 0;
+ ultimPIDusat = 1;
 
   /* Initialize hardware data */
   setGdt(); /* Definicio de la taula de segments de memoria */

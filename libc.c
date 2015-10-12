@@ -24,6 +24,15 @@ void perror(){
         case 9:
             write(1, "El File descriptor no es 1", 26);
             break;
+        case 50:
+            write(1, "Sense PCB lliures", 17);
+            break;
+        case 51:
+            write(1, "Sense pagines fisiques disponibles", 34);
+            break;
+        case 52:
+            write(1, "Sense espai en el PCB pare", 26);
+            break;
         default:
             write(1, "Error no contemplat", 19);
             break;
@@ -104,4 +113,20 @@ int getpid(){
                   );
   errno = 0;
   return pid;
+}
+
+int fork() {
+    int registre_eax;
+  __asm__ volatile("int $0x80"
+                    :"=a" (registre_eax)
+                    :"a"  (2)
+                  );
+
+  if (registre_eax < 0) {
+    errno = -registre_eax;
+    registre_eax = -1;
+    perror();
+  }
+  
+  return registre_eax;
 }

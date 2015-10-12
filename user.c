@@ -53,6 +53,7 @@ int __attribute__ ((__section__(".text.main")))
 	acum = 0;
  	acum = outer(count);
 	write(1, "Pepe ", 5);
+	fork();
 
 	while(1){}
 	return 0;

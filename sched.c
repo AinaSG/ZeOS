@@ -30,6 +30,8 @@ struct list_head readyqueue;
 
 struct task_struct * idle_task;
 
+int ultimPIDusat;
+
 
 /* get_DIR - Returns the Page Directory address for task 't' */
 page_table_entry * get_DIR (struct task_struct *t) 
@@ -80,6 +82,11 @@ void init_readyqueue (void){
     INIT_LIST_HEAD(&readyqueue);
 }
 
+int nouPID(){
+  int PID = ultimPIDusat +1;
+  ++ultimPIDusat;
+  return PID;
+}
 
 void init_idle (void)
 //PREGUNTAR PERQUE ENCARA NO PILLO MASSA BE COM VA DIAGRAMA PAGINA 48

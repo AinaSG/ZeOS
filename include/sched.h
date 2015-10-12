@@ -19,6 +19,7 @@ struct task_struct {
   page_table_entry * dir_pages_baseAddr;
     struct list_head list;
     int registre_esp;
+    unsigned long kernel_esp;
 };
 
 union task_union {
@@ -56,7 +57,7 @@ void task_switch(union task_union*t);
 struct task_struct *list_head_to_task_struct(struct list_head *l);
 
 int allocate_DIR(struct task_struct *t);
-
+extern int ultimPIDusat;
 page_table_entry * get_PT (struct task_struct *t) ;
 
 page_table_entry * get_DIR (struct task_struct *t) ;
@@ -66,6 +67,8 @@ void sched_next_rr();
 void update_process_state_rr(struct task_struct *t, struct list_head *dest);
 int needs_sched_rr();
 void update_sched_data_rr();
+
+int nouPID();
 
 void task_switch(union task_union *new);
 
