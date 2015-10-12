@@ -15,12 +15,12 @@ union task_union protected_tasks[NR_TASKS+2]
 
 union task_union *task = &protected_tasks[1]; /* == union task_union task[NR_TASKS] */
 
-#if 0
+//#if 0
 struct task_struct *list_head_to_task_struct(struct list_head *l)
 {
   return list_entry( l, struct task_struct, list);
 }
-#endif
+//#endif
 
 extern struct list_head blocked;
 
@@ -94,19 +94,18 @@ void init_idle (void)
   //E1. Desar al stack del procés Idle la adreça del codi que executarà (@ funció cpu_idle)
   //E2. Desar al stack el valor inicial que volem per ebp al acabar el dynamic link (pot ser 0)
   //E3. En un camp de la seva task_struct hem de desar a quina posició del stack hem guardat el valor inicial del registre ebp (posarlo a esp)
-
+  printk("INIT_IDLE\n");
   struct list_head *task_union_idle_hp = list_first(&freequeue); //1
   list_del(task_union_idle_hp); //traiem la llista de la freequeue
-  idle_task =list_head_to_task_struct(task_union_idle_hp) //5&6
+  idle_task =list_head_to_task_struct(task_union_idle_hp); //5&6
   idle_task->PID = 0; //2
   //4 ??????
   allocate_DIR(idle_task); //3
-
   union task_union *ta_un = (union task_union*)idle_task;
   ta_un->stack[KERNEL_STACK_SIZE-1] = (unsigned long)&cpu_idle; //E1
-  ta_un->stack[KERNEL_STACK_SIZE-2] = 0 //E2
+  ta_un->stack[KERNEL_STACK_SIZE-2] = 0; //E2
   idle_task->registre_esp = (int)&(ta_un->stack[KERNEL_STACK_SIZE-2]); //E3
-
+  printk("ENDINIT IDLE\n");
 }
 
 void init_task1(void)
@@ -118,6 +117,7 @@ void init_task1(void)
   //3. Usar set_user_pages (mm.c) completar la inicialització del espai d'usuari.
   //4.Actualitzar la TSS per fer que apunti al stack de new_task (sistema)
   //5. Marca la pagina de directori actual com a pagina actual de directori al sistema, usant set_cr3 (mm.c)
+printk("INIT TASK1\n");
 struct list_head *task_union_task1_hp = list_first(&freequeue);
 list_del(task_union_task1_hp);
 struct task_struct * task1_task = list_head_to_task_struct(task_union_task1_hp);
@@ -127,9 +127,9 @@ set_user_pages(task1_task); //3
 //4?????
 union task_union *ta_un = (union task_union*)task1_task;
 
-ts.esp0 =(DWord)&(ta_un->stack[KERNEL_STACK_SIZE]); //4????
-set_cr3(task1_task->dir_pages_baseAddr) //5
-
+tss.esp0 =(DWord)&(ta_un->stack[KERNEL_STACK_SIZE]); //4????
+set_cr3(task1_task->dir_pages_baseAddr); //5
+printk("ENDINIT TASK1\n");
 }
 
 
