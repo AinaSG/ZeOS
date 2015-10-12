@@ -58,6 +58,7 @@ int allocate_DIR(struct task_struct *t)
 void cpu_idle(void)
 {
 	__asm__ __volatile__("sti": : :"memory");
+  printk("ON IDLE!");
 
 	while(1)
 	{
@@ -148,3 +149,63 @@ struct task_struct* current()
   return (struct task_struct*)(ret_value&0xfffff000);
 }
 
+void inner_task_switch(union task_union *new){
+  //1. Updatejar el TSS perque apunti al stack de sistema de new
+  //2. cambiar l'espai d'adreçes del usuari updatejant el directori de pagines actual (set_cr3)
+  //3. Desar valor de EBP al PCB.
+  //4. Cambiar el stack de sistema posant ESP apuntant al valor desat al PCB new
+  //5. Restaurar EBP del stack
+  //6. Retornar a la rutina que ens ha cridat amb RET
+tss.esp0 = (DWord)&new->stack[KERNEL_STACK_SIZE]; //1
+set_cr3(get_DIR(&new->task)); //2
+
+__asm__ __volatile__("movl %%ebp, %0;"
+                      :"=g" (new -> task.registre_esp)
+                      :
+                    ); //3
+
+__asm__ __volatile__("movl %0, %%esp;"
+                      :
+                      : "g" (new->task.registre_esp)
+                      ); //4
+
+/// PEL PODER DEL UNICORN S HA FET EL CANVI DE PROCÉS///
+
+/*
+                      ch
+                   it
+        |\   |  sw
+       _| \-/sk
+      /    ta
+    //    ~ ~ \
+   //         |
+  //    \      \
+ |||     | .  .|
+///     / \___/
+
+*/
+
+__asm__ __volatile__("popl %ebp;"); //5
+
+__asm__ __volatile__("ret;"); //6
+
+}
+
+void task_switch(union task_union *new){
+  //1.Desar registres ESI, EDI i EBX
+  //2.Cridar a Inner_task_switch
+  //3. Fer restore dels registres esmentats
+
+  __asm__ __volatile__( "pushl %esi;"
+                        "pushl %edi;"
+                        "pushl %ebx;"
+                        ); //1
+
+  inner_task_switch(new); //2
+
+  __asm__ __volatile__( "popl %ebx;"
+                        "popl %edi;"
+                        "popl %esi;"
+                        ); //3
+
+}

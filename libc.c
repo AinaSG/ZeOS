@@ -92,6 +92,16 @@ int gettime(){
                       :"=a" (registre_eax)
                       :"a" (10)
                     );
+    errno = 0;
     return registre_eax;
 }
 
+int getpid(){
+  int pid;
+  __asm__ volatile("int $0x80;"
+                    :"=a" (pid)
+                    :"a" (20)
+                  );
+  errno = 0;
+  return pid;
+}

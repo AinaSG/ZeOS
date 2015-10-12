@@ -21,5 +21,17 @@
  .long sys_ni_syscall
  .long sys_ni_syscall
  .long sys_gettime
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_ni_syscall
+ .long sys_getpid
+ .long sys_ni_syscall
+ .long sys_ni_syscall
 .globl MAX_SYSCALL
-MAX_SYSCALL = (. - sys_call_table)/10
+MAX_SYSCALL = (. - sys_call_table)/4

@@ -41,7 +41,7 @@
 00000000000i[DEV   ] PIIX3 PCI-to-ISA bridge present at device 1, function 0
 00000000000i[PLUGIN] init_dev of 'cmos' plugin device by virtual method
 00000000000i[CMOS  ] Using local time for initial clock
-00000000000i[CMOS  ] Setting initial clock to: Mon Oct 12 02:01:21 2015 (time0=1444608081)
+00000000000i[CMOS  ] Setting initial clock to: Mon Oct 12 03:16:45 2015 (time0=1444612605)
 00000000000i[PLUGIN] init_dev of 'dma' plugin device by virtual method
 00000000000i[DMA   ] channel 4 used by cascade
 00000000000i[PLUGIN] init_dev of 'pic' plugin device by virtual method
@@ -166,9 +166,9 @@
 00001398971i[BIOS  ] Firmware waking vector 0xff00cc
 00001400766i[PCI   ] i440FX PMC write to PAM register 59 (TLB Flush)
 00001401489i[BIOS  ] bios_table_cur_addr: 0x000fa6c4
-00002450688i[XGUI  ] charmap update. Font Height is 16
+00001569248i[XGUI  ] charmap update. Font Height is 16
 00029625339i[BIOS  ] Booting from 0000:7c00
-00045340847i[FLOPPY] partial read() on floppy image returns 104/512
+00045340847i[FLOPPY] partial read() on floppy image returns 136/512
 00045385291i[FLOPPY] read() on floppy image returns 0
 00045429735i[FLOPPY] read() on floppy image returns 0
 00045474179i[FLOPPY] read() on floppy image returns 0
@@ -199,25 +199,25 @@
 00046587634i[FLOPPY] read() on floppy image returns 0
 00046632078i[FLOPPY] read() on floppy image returns 0
 00046676522i[FLOPPY] read() on floppy image returns 0
-01797308000i[      ] Ctrl-C detected in signal handler.
-01797308000i[      ] dbg: Quit
-01797308000i[CPU0  ] CPU is in protected mode (active)
-01797308000i[CPU0  ] CS.mode = 32 bit
-01797308000i[CPU0  ] SS.mode = 32 bit
-01797308000i[CPU0  ] EFER   = 0x00000000
-01797308000i[CPU0  ] | EAX=00000005  EBX=0000350e  ECX=00108002  EDX=00000005
-01797308000i[CPU0  ] | ESP=0011bfd0  EBP=0011bfec  ESI=000e0200  EDI=00003ff4
-01797308000i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df IF tf sf zf af pf cf
-01797308000i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
-01797308000i[CPU0  ] |  CS:0023( 0004| 0|  3) 00000000 ffffffff 1 1
-01797308000i[CPU0  ] |  DS:002b( 0005| 0|  3) 00000000 ffffffff 1 1
-01797308000i[CPU0  ] |  SS:002b( 0005| 0|  3) 00000000 ffffffff 1 1
-01797308000i[CPU0  ] |  ES:002b( 0005| 0|  3) 00000000 ffffffff 1 1
-01797308000i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
-01797308000i[CPU0  ] |  GS:0000( 0000| 0|  0) 00000000 00000000 0 0
-01797308000i[CPU0  ] | EIP=00100025 (00100025)
-01797308000i[CPU0  ] | CR0=0x80000011 CR2=0x00000000
-01797308000i[CPU0  ] | CR3=0x0002b000 CR4=0x00000000
-01797308000i[CMOS  ] Last time is 1444608530 (Mon Oct 12 02:08:50 2015)
-01797308000i[XGUI  ] Exit
-01797308000i[SIM   ] quit_sim called with exit code 0
+00186871887i[      ] Ctrl-C detected in signal handler.
+00186871888i[      ] dbg: Quit
+00186871888i[CPU0  ] CPU is in protected mode (active)
+00186871888i[CPU0  ] CS.mode = 32 bit
+00186871888i[CPU0  ] SS.mode = 32 bit
+00186871888i[CPU0  ] EFER   = 0x00000000
+00186871888i[CPU0  ] | EAX=00000005  EBX=0000350e  ECX=00108002  EDX=00000005
+00186871888i[CPU0  ] | ESP=0011bfd0  EBP=0011bfec  ESI=000e0200  EDI=00003ff4
+00186871888i[CPU0  ] | IOPL=0 id vip vif ac vm rf nt of df IF tf sf zf af pf cf
+00186871888i[CPU0  ] | SEG sltr(index|ti|rpl)     base    limit G D
+00186871888i[CPU0  ] |  CS:0023( 0004| 0|  3) 00000000 ffffffff 1 1
+00186871888i[CPU0  ] |  DS:002b( 0005| 0|  3) 00000000 ffffffff 1 1
+00186871888i[CPU0  ] |  SS:002b( 0005| 0|  3) 00000000 ffffffff 1 1
+00186871888i[CPU0  ] |  ES:002b( 0005| 0|  3) 00000000 ffffffff 1 1
+00186871888i[CPU0  ] |  FS:0000( 0000| 0|  0) 00000000 00000000 0 0
+00186871888i[CPU0  ] |  GS:0000( 0000| 0|  0) 00000000 00000000 0 0
+00186871888i[CPU0  ] | EIP=00100025 (00100025)
+00186871888i[CPU0  ] | CR0=0x80000011 CR2=0x00000000
+00186871888i[CPU0  ] | CR3=0x0002b000 CR4=0x00000000
+00186871888i[CMOS  ] Last time is 1444612651 (Mon Oct 12 03:17:31 2015)
+00186871888i[XGUI  ] Exit
+00186871888i[SIM   ] quit_sim called with exit code 0

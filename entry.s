@@ -31,7 +31,7 @@
     pushl %gs; pushl %fs; pushl %es; pushl %ds; pushl %eax; pushl %ebp; pushl %edi; pushl %esi; pushl %edx; pushl %ecx; pushl %ebx; movl $0x18, %edx; movl %edx, %ds; movl %edx, %es
     cmpl $0, %eax
     jl err
-    cmpl $12, %eax
+    cmpl $22, %eax #era aquí on havia de modificarse?
     jg err
     call *sys_call_table(, %eax, 0x04)
     jmp fin
