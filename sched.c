@@ -31,6 +31,7 @@ struct list_head readyqueue;
 struct task_struct * idle_task;
 
 int ultimPIDusat;
+unsigned int remaining_quantum;
 
 
 /* get_DIR - Returns the Page Directory address for task 't' */
@@ -130,6 +131,7 @@ struct list_head *task_union_task1_hp = list_first(&freequeue);
 list_del(task_union_task1_hp);
 struct task_struct * task1_task = list_head_to_task_struct(task_union_task1_hp);
 task1_task -> PID = 1; //1
+task1_task ->total_quantum=10; //per exemple
 allocate_DIR(task1_task); //2
 set_user_pages(task1_task); //3
 //4?????
@@ -142,7 +144,13 @@ printk("ENDINIT TASK1\n");
 
 
 void init_sched(){
+  init_freequeue();
+  INIT_LIST_HEAD(&readyqueue);
+}
 
+int get_quantum(struct task_struct *t)
+{
+  return t->total_quantum;
 }
 
 struct task_struct* current()
@@ -156,6 +164,16 @@ struct task_struct* current()
   return (struct task_struct*)(ret_value&0xfffff000);
 }
 
+void schedule()
+{
+  update_sched_data_rr();
+  if (needs_sched_rr())
+  {
+    update_process_state_rr(current(), &readyqueue);
+    sched_next_rr();
+  }
+}
+
 void inner_task_switch(union task_union *new){
   //1. Updatejar el TSS perque apunti al stack de sistema de new
   //2. cambiar l'espai d'adreçes del usuari updatejant el directori de pagines actual (set_cr3)
@@ -163,7 +181,7 @@ void inner_task_switch(union task_union *new){
   //4. Cambiar el stack de sistema posant ESP apuntant al valor desat al PCB new
   //5. Restaurar EBP del stack
   //6. Retornar a la rutina que ens ha cridat amb RET
-tss.esp0 = (DWord)&new->stack[KERNEL_STACK_SIZE]; //1
+tss.esp0 = (DWord)&new->stack[KERNEL_STACK_SIZE]; //1 &&Direcci'o inici pila sistema del procés. 
 set_cr3(get_DIR(&new->task)); //2
 
 __asm__ __volatile__("movl %%ebp, %0;"
@@ -215,4 +233,58 @@ void task_switch(union task_union *new){
                         "popl %esi;"
                         ); //3
 
+}
+
+void sched_next_rr(){
+  struct list_head *e;
+  struct task_struct *t;
+
+  e=list_first(&readyqueue);
+
+  if (e)
+  {
+    list_del(e);
+
+    t=list_head_to_task_struct(e);
+  }
+  else
+    t=idle_task;
+
+  t->state=ST_RUN;
+  remaining_quantum=get_quantum(t);
+
+  //update_stats(&(current()->p_stats.system_ticks), &(current()->p_stats.elapsed_total_ticks));
+  //update_stats(&(t->p_stats.ready_ticks), &(t->p_stats.elapsed_total_ticks));
+  //t->p_stats.total_trans++;
+
+  task_switch((union task_union*)t);
+
+}
+void update_process_state_rr(struct task_struct *t, struct list_head *dst_queue){
+    if (t->state!=ST_RUN) list_del(&(t->list));
+  if (dst_queue!=NULL)
+  {
+    list_add_tail(&(t->list), dst_queue);
+    if (dst_queue!=&readyqueue) t->state=ST_BLOCKED;
+    else
+    {
+      //update_stats(&(current()->p_stats.system_ticks), &(current()->p_stats.elapsed_total_ticks));
+      t->state=ST_READY;
+    }
+  }
+  else t->state=ST_RUN;
+
+}
+int needs_sched_rr(){
+  if (remaining_quantum == 0){
+    if(!list_empty(&readyqueue)){
+      return 1;
+    }
+    remaining_quantum=get_quantum(current());
+  }
+  return 0;
+
+}
+void update_sched_data_rr(){
+  --remaining_quantum;
 }

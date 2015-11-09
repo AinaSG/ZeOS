@@ -181,6 +181,20 @@ int sys_fork()
 
 void sys_exit()
 {  
+
+  page_table_entry *process_PT = get_PT(current());
+  int i;
+  for (i=0; i<NUM_PAG_DATA; i++)
+  {
+    free_frame(get_frame(process_PT, PAG_LOG_INIT_DATA+i));
+    del_ss_pag(process_PT, PAG_LOG_INIT_DATA+i);
+  }
+  
+  list_add_tail(&(current()->list), &freequeue);
+  
+  current()->PID=-1;
+  
+  sched_next_rr();
 }
 
 int sys_write(int fd, char * buffer, int size){
