@@ -11,9 +11,9 @@
 #include <mm.h>
 #include <io.h>
 #include <utils.h>
-#include <zeos_mm.h> /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
+//#include <zeos_mm.h> /* TO BE DELETED WHEN ADDED THE PROCESS MANAGEMENT CODE TO BECOME MULTIPROCESS */
 
-int zeos_ticks;
+
 int (*usr_main)(void) = (void *) PH_USER_START;
 unsigned int *p_sys_size = (unsigned int *) KERNEL_START;
 unsigned int *p_usr_size = (unsigned int *) KERNEL_START+1;
@@ -68,11 +68,9 @@ int __attribute__((__section__(".text.main")))
   // compiler will know its final memory location. Otherwise it will try to use the
   // 'ds' register to access the address... but we are not ready for that yet
   // (we are still in real mode).
-  set_seg_regs(__KERNEL_DS, __KERNEL_DS, (DWord) &protected_tasks[5]);
+  set_seg_regs(__KERNEL_DS, __KERNEL_DS, (DWord) &protected_tasks[2]);
 
   printk("Kernel Loaded!    "); 
- zeos_ticks = 0;
- ultimPIDusat = 1;
 
   /* Initialize hardware data */
   setGdt(); /* Definicio de la taula de segments de memoria */
@@ -81,10 +79,6 @@ int __attribute__((__section__(".text.main")))
 
   /* Initialize Memory */
   init_mm();
-
-//ENTTREGA 2, inicialitzar Freequeue
-init_freequeue();
-init_readyqueue();
 
 /* Initialize an address space to be used for the monoprocess version of ZeOS */
 
@@ -100,11 +94,6 @@ init_readyqueue();
 
   /* Move user code/data now (after the page table initialization) */
   copy_data((void *) KERNEL_START + *p_sys_size, usr_main, *p_usr_size);
-
-//Ticks del zeos
-
-   
-
   
   printk("Entering user mode..."); 
   

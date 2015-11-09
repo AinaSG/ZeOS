@@ -2,9 +2,14 @@
  * sched.c - initializes struct for task 0 anda task 1
  */
 
+#include <types.h>
+#include <hardware.h>
+#include <segment.h>
 #include <sched.h>
 #include <mm.h>
 #include <io.h>
+#include <utils.h>
+#include <p_stats.h>
 
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
@@ -13,47 +18,53 @@
 union task_union protected_tasks[NR_TASKS+2]
   __attribute__((__section__(".data.task")));
 
-union task_union *task = &protected_tasks[1]; /* == union task_union task[NR_TASKS] */
+union task_union *task = &protected_tasks[1]; /* task array */
 
-//#if 0
+#if 0
 struct task_struct *list_head_to_task_struct(struct list_head *l)
 {
   return list_entry( l, struct task_struct, list);
 }
-//#endif
+#endif
 
 extern struct list_head blocked;
 
-//ENTREGA 2
+// Free task structs
 struct list_head freequeue;
+// Ready queue
 struct list_head readyqueue;
 
-struct task_struct * idle_task;
-
-int ultimPIDusat;
-unsigned int remaining_quantum;
-
+void init_stats(struct stats *s)
+{
+	s->user_ticks = 0;
+	s->system_ticks = 0;
+	s->blocked_ticks = 0;
+	s->ready_ticks = 0;
+	s->elapsed_total_ticks = get_ticks();
+	s->total_trans = 0;
+	s->remaining_ticks = get_ticks();
+}
 
 /* get_DIR - Returns the Page Directory address for task 't' */
-page_table_entry * get_DIR (struct task_struct *t) 
+page_table_entry * get_DIR (struct task_struct *t)
 {
 	return t->dir_pages_baseAddr;
 }
 
 /* get_PT - Returns the Page Table address for task 't' */
-page_table_entry * get_PT (struct task_struct *t) 
+page_table_entry * get_PT (struct task_struct *t)
 {
 	return (page_table_entry *)(((unsigned int)(t->dir_pages_baseAddr->bits.pbase_addr))<<12);
 }
 
 
-int allocate_DIR(struct task_struct *t) 
+int allocate_DIR(struct task_struct *t)
 {
 	int pos;
 
 	pos = ((int)t-(int)task)/sizeof(union task_union);
 
-	t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos]; 
+	t->dir_pages_baseAddr = (page_table_entry*) &dir_pages[pos];
 
 	return 1;
 }
@@ -61,181 +72,59 @@ int allocate_DIR(struct task_struct *t)
 void cpu_idle(void)
 {
 	__asm__ __volatile__("sti": : :"memory");
-  printk("ON IDLE!");
 
 	while(1)
 	{
 	;
 	}
 }
-//ENTREGA 2, inicialitzem la feequeue posant moltes tasques buides
-void init_freequeue (void){
-    //Inicalitzem una llista buida, usem INIT_LIST_HEAD de list.h per assegurarho
-    INIT_LIST_HEAD(&freequeue);
 
-    int i;
-    for ( i= 0; i < NR_TASKS; ++i){
-        list_add_tail(&task[i].task.list, &freequeue);
-    }
-}
+#define DEFAULT_QUANTUM 10
 
-void init_readyqueue (void){
-    INIT_LIST_HEAD(&readyqueue);
-}
-
-int nouPID(){
-  int PID = ultimPIDusat +1;
-  ++ultimPIDusat;
-  return PID;
-}
-
-void init_idle (void)
-//PREGUNTAR PERQUE ENCARA NO PILLO MASSA BE COM VA DIAGRAMA PAGINA 48
-{
-  //1.Obtenir task_union lliure
-  //2. PID = 0
-  //3. inicialitzar dir_pages_baseAaddr amb un nou directori per a desar l'espai d'adresses (Usar allocate_DIR) TO-DO 
-  //4. Inicialitzar context d'execució per al procés, per restaurarlo quan se li doni CPU.
-  //5. Definir variable global idle_task (struct task_struct * idle_task)
-  //6. Inicialitza la variable global idle_task (per aconseguir rapid la task_struct del procés idle)
-
-
-  //E1. Desar al stack del procés Idle la adreça del codi que executarà (@ funció cpu_idle)
-  //E2. Desar al stack el valor inicial que volem per ebp al acabar el dynamic link (pot ser 0)
-  //E3. En un camp de la seva task_struct hem de desar a quina posició del stack hem guardat el valor inicial del registre ebp (posarlo a esp)
-  printk("INIT_IDLE\n");
-  struct list_head *task_union_idle_hp = list_first(&freequeue); //1
-  list_del(task_union_idle_hp); //traiem la llista de la freequeue
-  idle_task =list_head_to_task_struct(task_union_idle_hp); //5&6
-  idle_task->PID = 0; //2
-  //4 ??????
-  allocate_DIR(idle_task); //3
-  union task_union *ta_un = (union task_union*)idle_task;
-  ta_un->stack[KERNEL_STACK_SIZE-1] = (unsigned long)&cpu_idle; //E1
-  ta_un->stack[KERNEL_STACK_SIZE-2] = 0; //E2
-  idle_task->registre_esp = (int)&(ta_un->stack[KERNEL_STACK_SIZE-2]); //E3
-  printk("ENDINIT IDLE\n");
-}
-
-void init_task1(void)
-{
-  //PROCËS D'USUARI
-  //Pare de la resta de procesos del sistema el codi es posa a user.c (Perque es d'usuari)
-  //1. PID = 1
-  //2. Inicialitzar dir_pages_baseAaddr amb un mou directori per... (Igual que el 3. de ^)
-  //3. Usar set_user_pages (mm.c) completar la inicialització del espai d'usuari.
-  //4.Actualitzar la TSS per fer que apunti al stack de new_task (sistema)
-  //5. Marca la pagina de directori actual com a pagina actual de directori al sistema, usant set_cr3 (mm.c)
-printk("INIT TASK1\n");
-struct list_head *task_union_task1_hp = list_first(&freequeue);
-list_del(task_union_task1_hp);
-struct task_struct * task1_task = list_head_to_task_struct(task_union_task1_hp);
-task1_task -> PID = 1; //1
-task1_task ->total_quantum=10; //per exemple
-allocate_DIR(task1_task); //2
-set_user_pages(task1_task); //3
-//4?????
-union task_union *ta_un = (union task_union*)task1_task;
-
-tss.esp0 =(DWord)&(ta_un->stack[KERNEL_STACK_SIZE]); //4????
-set_cr3(task1_task->dir_pages_baseAddr); //5
-printk("ENDINIT TASK1\n");
-}
-
-
-void init_sched(){
-  init_freequeue();
-  INIT_LIST_HEAD(&readyqueue);
-}
+int remaining_quantum=0;
 
 int get_quantum(struct task_struct *t)
 {
   return t->total_quantum;
 }
 
-struct task_struct* current()
+void set_quantum(struct task_struct *t, int new_quantum)
 {
-  int ret_value;
-  
-  __asm__ __volatile__(
-  	"movl %%esp, %0"
-	: "=g" (ret_value)
-  );
-  return (struct task_struct*)(ret_value&0xfffff000);
+  t->total_quantum=new_quantum;
 }
 
-void schedule()
+struct task_struct *idle_task=NULL;
+
+void update_sched_data_rr(void)
 {
-  update_sched_data_rr();
-  if (needs_sched_rr())
+  remaining_quantum--;
+}
+
+int needs_sched_rr(void)
+{
+  if ((remaining_quantum==0)&&(!list_empty(&readyqueue))) return 1;
+  if (remaining_quantum==0) remaining_quantum=get_quantum(current());
+  return 0;
+}
+
+void update_process_state_rr(struct task_struct *t, struct list_head *dst_queue)
+{
+  if (t->state!=ST_RUN) list_del(&(t->list));
+  if (dst_queue!=NULL)
   {
-    update_process_state_rr(current(), &readyqueue);
-    sched_next_rr();
+    list_add_tail(&(t->list), dst_queue);
+    if (dst_queue!=&readyqueue) t->state=ST_BLOCKED;
+    else
+    {
+      update_stats(&(current()->p_stats.system_ticks), &(current()->p_stats.elapsed_total_ticks));
+      t->state=ST_READY;
+    }
   }
+  else t->state=ST_RUN;
 }
 
-void inner_task_switch(union task_union *new){
-  //1. Updatejar el TSS perque apunti al stack de sistema de new
-  //2. cambiar l'espai d'adreçes del usuari updatejant el directori de pagines actual (set_cr3)
-  //3. Desar valor de EBP al PCB.
-  //4. Cambiar el stack de sistema posant ESP apuntant al valor desat al PCB new
-  //5. Restaurar EBP del stack
-  //6. Retornar a la rutina que ens ha cridat amb RET
-tss.esp0 = (DWord)&new->stack[KERNEL_STACK_SIZE]; //1 &&Direcci'o inici pila sistema del procés. 
-set_cr3(get_DIR(&new->task)); //2
-
-__asm__ __volatile__("movl %%ebp, %0;"
-                      :"=g" (new -> task.registre_esp)
-                      :
-                    ); //3
-
-__asm__ __volatile__("movl %0, %%esp;"
-                      :
-                      : "g" (new->task.registre_esp)
-                      ); //4
-
-/// PEL PODER DEL UNICORN S HA FET EL CANVI DE PROCÉS///
-
-/*
-                      ch
-                   it
-        |\   |  sw
-       _| \-/sk
-      /    ta
-    //    ~ ~ \
-   //         |
-  //    \      \
- |||     | .  .|
-///     / \___/
-
-*/
-
-__asm__ __volatile__("popl %ebp;"); //5
-
-__asm__ __volatile__("ret;"); //6
-
-}
-
-void task_switch(union task_union *new){
-  //1.Desar registres ESI, EDI i EBX
-  //2.Cridar a Inner_task_switch
-  //3. Fer restore dels registres esmentats
-
-  __asm__ __volatile__( "pushl %esi;"
-                        "pushl %edi;"
-                        "pushl %ebx;"
-                        ); //1
-
-  inner_task_switch(new); //2
-
-  __asm__ __volatile__( "popl %ebx;"
-                        "popl %edi;"
-                        "popl %esi;"
-                        ); //3
-
-}
-
-void sched_next_rr(){
+void sched_next_rr(void)
+{
   struct list_head *e;
   struct task_struct *t;
 
@@ -253,38 +142,164 @@ void sched_next_rr(){
   t->state=ST_RUN;
   remaining_quantum=get_quantum(t);
 
-  //update_stats(&(current()->p_stats.system_ticks), &(current()->p_stats.elapsed_total_ticks));
-  //update_stats(&(t->p_stats.ready_ticks), &(t->p_stats.elapsed_total_ticks));
-  //t->p_stats.total_trans++;
+  update_stats(&(current()->p_stats.system_ticks), &(current()->p_stats.elapsed_total_ticks));
+  update_stats(&(t->p_stats.ready_ticks), &(t->p_stats.elapsed_total_ticks));
+  t->p_stats.total_trans++;
 
   task_switch((union task_union*)t);
-
 }
-void update_process_state_rr(struct task_struct *t, struct list_head *dst_queue){
-    if (t->state!=ST_RUN) list_del(&(t->list));
-  if (dst_queue!=NULL)
+
+void schedule()
+{
+  update_sched_data_rr();
+  if (needs_sched_rr())
   {
-    list_add_tail(&(t->list), dst_queue);
-    if (dst_queue!=&readyqueue) t->state=ST_BLOCKED;
-    else
-    {
-      //update_stats(&(current()->p_stats.system_ticks), &(current()->p_stats.elapsed_total_ticks));
-      t->state=ST_READY;
-    }
+    update_process_state_rr(current(), &readyqueue);
+    sched_next_rr();
   }
-  else t->state=ST_RUN;
-
 }
-int needs_sched_rr(){
-  if (remaining_quantum == 0){
-    if(!list_empty(&readyqueue)){
-      return 1;
-    }
-    remaining_quantum=get_quantum(current());
+
+void init_idle (void)
+{
+  struct list_head *l = list_first(&freequeue);
+  list_del(l);
+  struct task_struct *c = list_head_to_task_struct(l);
+  union task_union *uc = (union task_union*)c;
+
+  c->PID=0;
+
+  c->total_quantum=DEFAULT_QUANTUM;
+
+  init_stats(&c->p_stats);
+
+  allocate_DIR(c);
+
+  uc->stack[KERNEL_STACK_SIZE-1]=(unsigned long)&cpu_idle; /* Return address */
+  uc->stack[KERNEL_STACK_SIZE-2]=0; /* register ebp */
+
+  c->register_esp=(int)&(uc->stack[KERNEL_STACK_SIZE-2]); /* top of the stack */
+
+  idle_task=c;
+}
+
+void init_task1(void)
+{
+  struct list_head *l = list_first(&freequeue);
+  list_del(l);
+  struct task_struct *c = list_head_to_task_struct(l);
+  union task_union *uc = (union task_union*)c;
+
+  c->PID=1;
+
+  c->total_quantum=DEFAULT_QUANTUM;
+
+  c->state=ST_RUN;
+
+  remaining_quantum=c->total_quantum;
+
+  init_stats(&c->p_stats);
+
+  allocate_DIR(c);
+
+  set_user_pages(c);
+
+  tss.esp0=(DWord)&(uc->stack[KERNEL_STACK_SIZE]);
+
+  set_cr3(c->dir_pages_baseAddr);
+}
+
+void init_freequeue()
+{
+  int i;
+
+  INIT_LIST_HEAD(&freequeue);
+
+  /* Insert all task structs in the freequeue */
+  for (i=0; i<NR_TASKS; i++)
+  {
+    task[i].task.PID=-1;
+    list_add_tail(&(task[i].task.list), &freequeue);
   }
-  return 0;
-
 }
-void update_sched_data_rr(){
-  --remaining_quantum;
+
+void init_sched()
+{
+  init_freequeue();
+  INIT_LIST_HEAD(&readyqueue);
+}
+
+struct task_struct* current()
+{
+  int ret_value;
+
+  __asm__ __volatile__(
+  	"movl %%esp, %0"
+	: "=g" (ret_value)
+  );
+  return (struct task_struct*)(ret_value&0xfffff000);
+}
+
+struct task_struct* list_head_to_task_struct(struct list_head *l)
+{
+  return (struct task_struct*)((int)l&0xfffff000);
+}
+
+/* Do the magic of a task switch */
+void inner_task_switch(union task_union *new)
+{
+  page_table_entry *new_DIR = get_DIR(&new->task);
+
+  /* Update TSS to make it point to the new stack */
+  tss.esp0=(int)&(new->stack[KERNEL_STACK_SIZE]);
+
+  /* TLB flush. New address space */
+  set_cr3(new_DIR);
+
+  /* Stores current ebp */
+  __asm__ __volatile__ (
+  	"movl %%ebp, %0\n\t"
+	: "=g" (current()->register_esp)
+	: );
+
+  /* Restores new esp. Now, we are in the new process */
+  __asm__ __volatile__ (
+  	"movl %0, %%esp\n\t"
+	:
+	: "g" (new->task.register_esp) );
+
+  /* Restores ebp from the stack */
+  __asm__ __volatile__ (
+  	"popl %%ebp\n\t"
+	:
+	: );
+
+  /* To prevent returning with compiler's frame recovery, we put our own ret instr */
+  __asm__ __volatile__ (
+  	"ret\n\t"
+	:
+	: );
+}
+
+/* Given the new process, performs a task switch */
+void task_switch(union task_union *new)
+{
+  __asm__ __volatile__ (
+  	"pushl %esi\n\t"
+	"pushl %edi\n\t"
+	"pushl %ebx\n\t"
+	);
+  inner_task_switch(new);
+  __asm__ __volatile__ (
+  	"popl %ebx\n\t"
+	"popl %edi\n\t"
+	"popl %esi\n\t"
+	);
+}
+
+/* Force a task switch assuming that the scheduler does not work with priorities */
+void force_task_switch()
+{
+  update_process_state_rr(current(), &readyqueue);
+
+  sched_next_rr();
 }

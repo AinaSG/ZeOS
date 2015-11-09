@@ -7,10 +7,9 @@
 #include <hardware.h>
 #include <io.h>
 
-#include <zeos_interrupt.h>
-#include <entry.h>
+#include <sched.h>
 
-#include <system.h>
+#include <zeos_interrupt.h>
 
 Gate idt[IDT_ENTRIES];
 Register    idtR;
@@ -32,7 +31,22 @@ char char_map[] =
   '\0','\0'
 };
 
+int zeos_ticks = 0;
 
+void clock_routine()
+{
+  zeos_show_clock();
+  zeos_ticks ++;
+  
+  schedule();
+}
+
+void keyboard_routine()
+{
+  unsigned char c = inb(0x60);
+  
+  if (c&0x80) printc_xy(0, 0, char_map[c&0x7f]);
+}
 
 void setInterruptHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
 {
@@ -78,6 +92,9 @@ void setTrapHandler(int vector, void (*handler)(), int maxAccessibleFromPL)
   idt[vector].highOffset      = highWord((DWord)handler);
 }
 
+void clock_handler();
+void keyboard_handler();
+void system_call_handler();
 
 void setIdt()
 {
@@ -88,35 +105,10 @@ void setIdt()
   set_handlers();
 
   /* ADD INITIALIZATION CODE FOR INTERRUPT VECTOR */
-    setInterruptHandler(33, keyboard_handler, 0);
-    setInterruptHandler(32, clock_handler, 0);
-    setTrapHandler(0x80, system_call_handler, 3);
+  setInterruptHandler(32, clock_handler, 0);
+  setInterruptHandler(33, keyboard_handler, 0);
+  setTrapHandler(0x80, system_call_handler, 3);
 
   set_idt_reg(&idtR);
-}
-
-
-
-void keyboard_routine() {
-    unsigned char input = inb(0x60);
-    char k;
-
-    if (input < 0x80) {
-        if (input <98){//pilla la que es
-            k = char_map[input];
-            if (k == '\0'){
-                k = 'C';
-            }
-        }
-        else k = 'C';
-        printc_xy(65,3,k);
-    }
-    else {}
-}
-
-void clock_routine() {
-    zeos_ticks++;
-    zeos_show_clock();
-    schedule();
 }
 

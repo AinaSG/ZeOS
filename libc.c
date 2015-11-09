@@ -8,38 +8,6 @@
 
 int errno;
 
-void perror(){
-    write(1, "ERROR: ", 7);
-    int e = errno;
-    switch (e){
-        case 4:
-            write(1, "No s ha passat un buffer", 24);
-            break;
-        case 5:
-            write(1, "Tamany negatiu", 14);
-            break;
-        case 13:
-            write(1, "Sense permisos per realitzar la operacio", 40);
-            break;
-        case 9:
-            write(1, "El File descriptor no es 1", 26);
-            break;
-        case 50:
-            write(1, "Sense PCB lliures", 17);
-            break;
-        case 51:
-            write(1, "Sense pagines fisiques disponibles", 34);
-            break;
-        case 52:
-            write(1, "Sense espai en el PCB pare", 26);
-            break;
-        default:
-            write(1, "Error no contemplat", 19);
-            break;
-    }
-}
-
-
 void itoa(int a, char *b)
 {
   int i, i1;
@@ -75,65 +43,103 @@ int strlen(char *a)
   return i;
 }
 
-// Wraper de write, retorna numero de caracters escrits
-int write ( int fd, char *buffer, int size){
-    int registre_eax;
-    __asm__ volatile( "int $0x80"
-             :"=a" (registre_eax),
-             "+b" (fd),
-             "+c" (buffer),
-             "+d" (size)
-             :"a" (4)
-            );
-     if (registre_eax <0){
-        errno = -registre_eax;
-        registre_eax = -1;
-        perror();
-    }
-    else registre_eax = registre_eax;
-    return registre_eax;
+void perror()
+{
+  char buffer[256];
+
+  itoa(errno, buffer);
+
+  write(1, buffer, strlen(buffer));
 }
 
-//Wraper del gettime, retorna ticks des del boot del sistema operatiu
-int gettime(){
-    int registre_eax;
-    __asm__ volatile( "int $0x80"
-                      :"=a" (registre_eax)
-                      :"a" (10)
-                    );
-    errno = 0;
-    return registre_eax;
-}
-
-int getpid(){
-  int pid;
-  __asm__ volatile("int $0x80;"
-                    :"=a" (pid)
-                    :"a" (20)
-                  );
-  errno = 0;
-  return pid;
-}
-
-int fork() {
-    int registre_eax;
-  __asm__ volatile("int $0x80"
-                    :"=a" (registre_eax)
-                    :"a"  (2)
-                  );
-
-  if (registre_eax < 0) {
-    errno = -registre_eax;
-    registre_eax = -1;
-    perror();
-  }
+int write(int fd, char *buffer, int size)
+{
+  int result;
   
-  return registre_eax;
+  __asm__ __volatile__ (
+	"int $0x80\n\t"
+	: "=a" (result)
+	: "a" (4), "b" (fd), "c" (buffer), "d" (size));
+  if (result<0)
+  {
+    errno = -result;
+    return -1;
+  }
+  errno=0;
+  return result;
+}
+ 
+int gettime()
+{
+  int result;
+  
+  __asm__ __volatile__ (
+	"int $0x80\n\t"
+	:"=a" (result)
+	:"a" (10) );
+  errno=0;
+  return result;
 }
 
-void exit() {
-    __asm__ __volatile__ ("int $0x80;"
-                          :
-                          :"a" (1) 
-                          );
+int getpid()
+{
+  int result;
+  
+  __asm__ __volatile__ (
+  	"int $0x80\n\t"
+	:"=a" (result)
+	:"a" (20) );
+  errno=0;
+  return result;
+}
+
+int fork()
+{
+  int result;
+  
+  __asm__ __volatile__ (
+  	"int $0x80\n\t"
+	:"=a" (result)
+	:"a" (2) );
+  if (result<0)
+  {
+    errno = -result;
+    return -1;
+  }
+  errno=0;
+  return result;
+}
+
+void exit(void)
+{
+  __asm__ __volatile__ (
+  	"int $0x80\n\t"
+	:
+	:"a" (1) );
+}
+
+int yield()
+{
+  int result;
+  __asm__ __volatile__ (
+  	"int $0x80\n\t"
+	:"=a" (result)
+	:"a" (13) );
+  return result;
+}
+
+int get_stats(int pid, struct stats *st)
+{
+  int result;
+  __asm__ __volatile__ (
+  	"int $0x80\n\t"
+	:"=a" (result)
+	:"a" (35), "b" (pid), "c" (st) );
+  if (result<0)
+  {
+    errno = -result;
+    return -1;
+  }
+  errno=0;
+  return result;
 }
