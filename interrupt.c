@@ -38,6 +38,7 @@ void clock_routine()
   zeos_show_clock();
   zeos_ticks ++;
   
+  zeos_update_read_console_emul();
   schedule();
 }
 

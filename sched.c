@@ -12,6 +12,7 @@
 #include <p_stats.h>
 #include <schedperf.h>
 
+
 /**
  * Container for the Task array and 2 additional pages (the first and the last one)
  * to protect against out of bound accesses.
@@ -327,3 +328,38 @@ struct list_head * get_task_list(struct  task_struct* t){
   struct list_head * r = &(t->list);
   return r;
 }
+
+void block_process(struct list_head *block_queue) {
+  struct task_struct *t = current();
+  struct stats *st = get_task_stats(t);
+  
+  update_process_state(t, block_queue);
+  st -> system_ticks = get_ticks()-st->elapsed_total_ticks;
+  st->elapsed_total_ticks = get_ticks();
+  sched_next();
+}
+
+void unblock_process (struct task_struct *blocked) {
+  struct stats *st = get_task_stats(blocked);
+  struct list_head *l = get_task_list(blocked);
+  
+  update_process_state(blocked, &readyqueue);
+  st -> blocked_ticks += (get_ticks()-st->elapsed_total_ticks);
+  st->elapsed_total_ticks = get_ticks();
+  
+  if (needs_sched()) {
+    update_process_state(current(), &readyqueue);
+    sched_next();
+  }
+}
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
