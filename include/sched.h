@@ -76,4 +76,9 @@ void update_sched_data_rr();
 
 void init_stats(struct stats *s);
 
+
+struct stats * get_task_stats (struct task_struct *t);
+
+struct list_head *get_task_list(struct  task_struct *t);
+
 #endif  /* __SCHED_H__ */
